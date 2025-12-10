@@ -1,3 +1,4 @@
+import { COLORS } from "../helpers/colors.ts";
 /**
  * ! Patrón Flyweight
  * Es un patrón de diseño estructural que nos permite usar objetos compartidos
@@ -8,3 +9,70 @@
  *
  * https://refactoring.guru/es/design-patterns/flyweight
  */
+interface Location {
+  display(coordinates: { x: number; y: number }): void;
+}
+
+// Flyweight
+class LocationIcon implements Location {
+  private type: string;
+  private iconImage: string;
+
+  constructor(type: string, iconImage: string) {
+    this.type = type;
+    this.iconImage = iconImage;
+  }
+
+  display(coordinates: { x: number; y: number }): void {
+    console.log(
+      `Coords: ${this.type} en (${coordinates.x}, ${coordinates.y}) con ícono %c[${this.iconImage}]`,
+      COLORS.green
+    );
+  }
+}
+
+// Fabrica de flyweights
+class LocationIconFactory {
+  private icons: Record<string, LocationIcon> = {};
+
+  getLocationIcon(type: string): LocationIcon {
+    if (!this.icons[type]) {
+      console.log(`%cCreando una instancia del ícono de ${type}`, COLORS.red);
+      const iconImage = `imagen_de_${type.toLowerCase()}.png`;
+      this.icons[type] = new LocationIcon(type, iconImage);
+    }
+
+    return this.icons[type];
+  }
+}
+
+class MapLocation {
+  private coordinates: { x: number; y: number };
+  private icon: LocationIcon;
+
+  constructor(x: number, y: number, icon: LocationIcon) {
+    this.coordinates = { x, y };
+    this.icon = icon;
+  }
+
+  display(): void {
+    this.icon.display(this.coordinates);
+  }
+}
+
+function main() {
+  const factory = new LocationIconFactory();
+
+  const locations: MapLocation[] = [
+    new MapLocation(10, 20, factory.getLocationIcon("Restaurant")),
+    new MapLocation(10, 20, factory.getLocationIcon("Restaurant")),
+    new MapLocation(15, 25, factory.getLocationIcon("Hospital")),
+    new MapLocation(30, 40, factory.getLocationIcon("Restaurant")),
+    new MapLocation(50, 60, factory.getLocationIcon("School")),
+    new MapLocation(70, 80, factory.getLocationIcon("Hospital")),
+  ];
+
+  locations.forEach((location) => location.display());
+}
+
+main();
